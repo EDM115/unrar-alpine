@@ -1,0 +1,36 @@
+name: "Check for new UnRAR upstream"
+
+on:
+  schedule:
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Fetch RARLAB download page
+        run: |
+          curl -s https://www.rarlab.com/rar_add.htm \
+            > rar_add.htm
+
+      - name: Extract latest UnRAR URL
+        id: extract
+        run: |
+          relurl=$(grep -oP 'href="\Krar/unrarsrc-[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz' rar_add.htm | head -1)
+          full="https://www.rarlab.com/${relurl}"
+          echo "url=$full" >> $GITHUB_OUTPUT
+
+      - name: Read current latest from versions.json
+        id: current
+        run: |
+          latest=$(jq -r '.[-1].url' versions.json)
+          echo "latest=$latest" >> $GITHUB_OUTPUT
+
+      - name: Trigger builder if upstream changed
+        if: steps.extract.outputs.url != steps.current.outputs.latest
+        run: gh workflow run builder.yml \
+          -f download_url="${{ steps.extract.outputs.url }}"

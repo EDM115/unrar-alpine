@@ -1,0 +1,169 @@
+name: "Build UnRAR for Alpine"
+
+on:
+  workflow_dispatch:
+    inputs:
+      download_url:
+        description: 'Full UnRAR source .tar.gz URL (ex https://www.rarlab.com/rar/unrarsrc-7.1.6.tar.gz)'
+        required: true
+        type: string
+
+jobs:
+  build_x64:
+    name: Build x86_64
+    runs-on: ubuntu-24.04
+    container: amd64/alpine:latest
+    outputs:
+      version: ${{ steps.extract_version.outputs.version }}
+      binary_version: ${{ steps.extract_version.outputs.binary_version }}
+      release_date: ${{ steps.extract_version.outputs.release_date }}
+      sha256_src: ${{ steps.calc_sha_src.outputs.sha256 }}
+      sha256_binary_x64: ${{ steps.calc_sha_bin.outputs.sha256 }}
+      src_filename: ${{ steps.mk_src_name.outputs.filename }}
+    permissions:
+      id-token: write
+      attestations: write
+    steps:
+      - name: Extract version from URL
+        id: extract_version
+        run: |
+          url="${{ github.event.inputs.download_url }}"
+          v=$(echo "$url" | sed -E 's#.*/unrarsrc-([0-9]+\.[0-9]+\.[0-9]+)\.tar\.gz#\1#;')
+          # read version.hpp
+          curl -s "$url" -o /tmp/src.tar.gz
+          mkdir -p /tmp/src && tar xf /tmp/src.tar.gz -C /tmp/src --strip-components=1
+          cd /tmp/src
+          major=$(grep '#define RARVER_MAJOR' version.hpp | awk '{print $3}')
+          minor=$(grep '#define RARVER_MINOR' version.hpp | awk '{print $3}')
+          beta=$(grep '#define RARVER_BETA'  version.hpp | awk '{print $3}')
+          day=$(grep '#define RARVER_DAY'   version.hpp | awk '{print $3}')
+          month=$(grep '#define RARVER_MONTH' version.hpp | awk '{print $3}')
+          year=$(grep '#define RARVER_YEAR'  version.hpp | awk '{print $3}')
+          echo "version=$v"                >> $GITHUB_OUTPUT
+          echo "binary_version=$major.$minor.$beta" >> $GITHUB_OUTPUT
+          echo "release_date=$year-$month-$day"     >> $GITHUB_OUTPUT
+          rm -rf /tmp/src /tmp/src.tar.gz
+
+      - name: Define source filename
+        id: mk_src_name
+        run: |
+          fn="unrarsrc-${{ steps.extract_version.outputs.version }}.tar.gz"
+          echo "filename=$fn" >> $GITHUB_OUTPUT
+
+      - name: Prepare build deps
+        run: apk update && apk add --no-cache curl make g++ libffi-dev musl-dev
+
+      - name: Fetch and unpack source
+        run: |
+          curl -L "${{ github.event.inputs.download_url }}" \
+            -o /tmp/${{ steps.mk_src_name.outputs.filename }}
+          mkdir -p /tmp/unrar
+          tar xf /tmp/${{ steps.mk_src_name.outputs.filename }} \
+            -C /tmp/unrar --strip-components=1
+
+      - name: Compile
+        run: |
+          cd /tmp/unrar
+          make
+
+      - name: Compute SHA256 of source archive
+        id: calc_sha_src
+        run: |
+          sha=$(sha256sum /tmp/${{ steps.mk_src_name.outputs.filename }} | awk '{print $1}')
+          echo "sha256=$sha" >> $GITHUB_OUTPUT
+
+      - name: Compute SHA256 of built unrar
+        id: calc_sha_bin
+        run: |
+          sha=$(sha256sum /tmp/unrar/unrar | awk '{print $1}')
+          echo "sha256=$sha" >> $GITHUB_OUTPUT
+
+      - name: Package x64 binary
+        run: |
+          zip -j /tmp/unrar-x64.zip /tmp/unrar/unrar
+
+      - name: Upload x64 binary ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: unrar-x64
+          path: /tmp/unrar-x64.zip
+
+      - name: Upload source archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.mk_src_name.outputs.filename }}
+          path: /tmp/${{ steps.mk_src_name.outputs.filename }}
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: '/tmp/unrar/unrar'
+          subject-digest: "sha256:${{ steps.calc_sha_bin.outputs.sha256 }}"
+
+  build_arm64:
+    name: Build ARM64
+    runs-on: ubuntu-24.04
+    container: arm64v8/alpine:latest
+    needs: build_x64
+    outputs:
+      sha256_binary_arm64: ${{ steps.calc_sha_bin.outputs.sha256 }}
+    permissions:
+      id-token: write
+      attestations: write
+    steps:
+      - name: Prepare build deps
+        run: apk update && apk add --no-cache curl make g++ libffi-dev musl-dev
+
+      - name: Fetch & extract same source
+        run: |
+          # reuse the already-downloaded source from build_x64 via ${{ needs.build_x64.outputs.src_filename }}
+          curl -L "${{ github.event.inputs.download_url }}" \
+            -o /tmp/${{ needs.build_x64.outputs.src_filename }}
+          mkdir -p /tmp/unrar
+          tar xf /tmp/${{ needs.build_x64.outputs.src_filename }} \
+            -C /tmp/unrar --strip-components=1
+
+      - name: Compile
+        run: |
+          cd /tmp/unrar
+          make
+
+      - name: Compute SHA256 of built ARM64 unrar
+        id: calc_sha_bin
+        run: |
+          sha=$(sha256sum /tmp/unrar/unrar | awk '{print $1}')
+          echo "sha256=$sha" >> $GITHUB_OUTPUT
+
+      - name: Package ARM64 binary
+        run: |
+          zip -j /tmp/unrar-arm64.zip /tmp/unrar/unrar
+
+      - name: Upload ARM64 binary ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: unrar-arm64
+          path: /tmp/unrar-arm64.zip
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: '/tmp/unrar/unrar'
+          subject-digest: "sha256:${{ steps.calc_sha_bin.outputs.sha256 }}"
+
+  trigger_publisher:
+    name: Trigger publisher
+    needs:
+      - build_x64
+      - build_arm64
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger publisher workflow
+        run: gh workflow run publisher.yml \
+          -f version="${{ needs.build_x64.outputs.version }}" \
+          -f binary_version="${{ needs.build_x64.outputs.binary_version }}" \
+          -f release_date="${{ needs.build_x64.outputs.release_date }}" \
+          -f sha256_src="${{ needs.build_x64.outputs.sha256_src }}" \
+          -f sha256_binary_x64="${{ needs.build_x64.outputs.sha256_binary_x64 }}" \
+          -f sha256_binary_arm64="${{ needs.build_arm64.outputs.sha256_binary_arm64 }}" \
+          -f src_filename="${{ needs.build_x64.outputs.src_filename }}"
+          -f url="${{ github.event.inputs.download_url }}"
