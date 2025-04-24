@@ -29,7 +29,6 @@ jobs:
         run: |
           url="${{ github.event.inputs.download_url }}"
           v=$(echo "$url" | sed -E 's#.*/unrarsrc-([0-9]+\.[0-9]+\.[0-9]+)\.tar\.gz#\1#;')
-          # read version.hpp
           curl -s "$url" -o /tmp/src.tar.gz
           mkdir -p /tmp/src && tar xf /tmp/src.tar.gz -C /tmp/src --strip-components=1
           cd /tmp/src
@@ -102,7 +101,7 @@ jobs:
 
   build_arm64:
     name: Build ARM64
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04-arm
     container: arm64v8/alpine:latest
     needs: build_x64
     outputs:
@@ -116,7 +115,6 @@ jobs:
 
       - name: Fetch & extract same source
         run: |
-          # reuse the already-downloaded source from build_x64 via ${{ needs.build_x64.outputs.src_filename }}
           curl -L "${{ github.event.inputs.download_url }}" \
             -o /tmp/${{ needs.build_x64.outputs.src_filename }}
           mkdir -p /tmp/unrar
@@ -156,6 +154,8 @@ jobs:
       - build_x64
       - build_arm64
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Trigger publisher workflow
         run: gh workflow run publisher.yml \
