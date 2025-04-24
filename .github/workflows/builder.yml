@@ -63,7 +63,16 @@ jobs:
       - name: Compile
         run: |
           cd /tmp/unrar
-          make
+          if [ -f makefile ]; then
+            make
+          elif [ -f makefile.gcc ]; then
+            make -f makefile.gcc
+          elif [ -f makefile.unix ]; then
+            make -f makefile.unix
+          else
+            echo "❌ No makefile found in /tmp/unrar" >&2
+            exit 1
+          fi
 
       - name: Compute SHA256 of source archive
         id: calc_sha_src
