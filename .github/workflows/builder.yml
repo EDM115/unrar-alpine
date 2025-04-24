@@ -24,6 +24,9 @@ jobs:
       id-token: write
       attestations: write
     steps:
+      - name: Prepare build deps
+        run: apk update && apk add --no-cache curl make g++ libffi-dev musl-dev
+
       - name: Extract version from URL
         id: extract_version
         run: |
@@ -48,9 +51,6 @@ jobs:
         run: |
           fn="unrarsrc-${{ steps.extract_version.outputs.version }}.tar.gz"
           echo "filename=$fn" >> $GITHUB_OUTPUT
-
-      - name: Prepare build deps
-        run: apk update && apk add --no-cache curl make g++ libffi-dev musl-dev
 
       - name: Fetch and unpack source
         run: |
