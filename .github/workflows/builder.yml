@@ -156,6 +156,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
+    permissions:
+      actions: write
     steps:
       - name: Trigger publisher workflow
         run: gh workflow run publisher.yml \
