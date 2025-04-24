@@ -1,0 +1,61 @@
+name: "Catch up UnRAR builds"
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  catchup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read last_processed_version
+        id: last
+        run: |
+          val=$(cat last_processed_version | tr -d '\r')
+          echo "last=$val" >> $GITHUB_OUTPUT
+
+      - name: Read highest ID in versions.json
+        id: high
+        run: |
+          hi=$(jq '.[-1].id' versions.json)
+          echo "highest=$hi" >> $GITHUB_OUTPUT
+
+      - name: Determine if there's a missing version
+        id: check
+        run: |
+          if [ "${{ steps.last.outputs.last }}" -ge "${{ steps.high.outputs.highest }}" ]; then
+            echo "run=false" >> $GITHUB_OUTPUT
+          else
+            echo "run=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Exit if up-to-date
+        if: steps.check.outputs.run == 'false'
+        run: |
+          echo "✅ No new versions to catch up, exiting."
+          exit 0
+
+      - name: Compute next ID to process
+        id: next
+        run: |
+          nxt=$(( ${{ steps.last.outputs.last }} + 1 ))
+          echo "next=$nxt" >> $GITHUB_OUTPUT
+
+      - name: Lookup download_url for next ID
+        id: lookup
+        run: |
+          url=$(jq -r --argjson id "${{ steps.next.outputs.next }}" \
+            'map(select(.id == $id))[0].url' versions.json)
+          echo "download_url=$url" >> $GITHUB_OUTPUT
+
+      - name: Dispatch builder.yml for ID ${{ steps.next.outputs.next }}
+        run: |
+          gh workflow run builder.yml \
+            -f download_url="${{ steps.lookup.outputs.download_url }}"
