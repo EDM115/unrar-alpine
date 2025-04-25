@@ -20,21 +20,22 @@ RUN apk update && \
 # ...
 
 RUN curl -LsSf https://api.github.com/repos/EDM115/unrar-alpine/releases/latest \
-    | jq -r '.assets[] | select(.name == "unrar-x64.zip") | .id' \
+    | jq -r '.assets[] | select(.name == "unrar") | .id' \
     | xargs -I {} curl -LsSf https://api.github.com/repos/EDM115/unrar-alpine/releases/assets/{} \
     | jq -r '.browser_download_url' \
-    | xargs -I {} curl -Lsf {} -o /tmp/unrar-x64.zip && \
-    unzip -o /tmp/unrar-x64.zip -d /tmp && \
+    | xargs -I {} curl -Lsf {} -o /tmp/unrar && \
     install -v -m755 /tmp/unrar /usr/local/bin
 ```
 
 All available versions along with their download URLs are available in [`versions.json`](versions.json).  
-An ARM64 version is also available under the name `unrar-arm64.zip`.  
 Each release contains the SHA-256 checksum of the built files, as well as the SHA-256 checksum of the original files provided by RARLAB.  
 You can also verify the release by going to [Attestations](https://github.com/EDM115/unrar-alpine/attestations), then select the correct release and platform. Copy the provided command and point it to the `unrar` binary from the zip.
 
 > [!IMPORTANT]  
 > If a version is present in `versions.json` but **not** in the releases, it means that code simply didn't compiled.
+
+> [!NOTE]  
+> I initially wanted to provide ARM64 versions as well but it isn't possible due to current GitHub restrictions.
 
 ## Versioning scheme
 The versions you see in the releases tab are extracted from the original download link.  
@@ -45,7 +46,7 @@ The body of the release will precise :
 - The version from the download link
 - The version from the `unrar` binary
 - The date at which it was made released
-- The checksum of the 2 built `unrar`s
+- The checksum of the built `unrar`
 - The checksum of the downloaded source code archive
 
 This repo will check every day at 8 AM UTC if a new version is available, and if it is the case, will built and release it.  

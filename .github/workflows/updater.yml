@@ -51,7 +51,6 @@ jobs:
             exit 1
           fi
           echo "$id" > last_processed_version
-          echo "" >> last_processed_version
 
       - name: Configure Git
         run: |
@@ -61,6 +60,6 @@ jobs:
       - name: Commit and push changes
         run: |
           git add versions.json last_processed_version
-          git commit -m "chore: new processed version (${{ github.event.inputs.version }}) [skip ci]" || echo "No changes to commit"
+          git commit -m "chore: new processed version (${{ github.event.inputs.version }})" || echo "No changes to commit"
           git push
 
