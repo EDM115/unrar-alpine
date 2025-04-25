@@ -34,17 +34,17 @@ jobs:
 
       - name: Update versions.json
         run: |
-            version_exists=$(jq --arg version "${{ github.event.inputs.version }}" 'map(select(.version == $version)) | length' versions.json)
-            if [ "$version_exists" -eq 0 ]; then
-              jq --arg id "${{ steps.get_latest_id.outputs.latest_id }}" \
-                --arg url "${{ github.event.inputs.url }}" \
-                --arg version "${{ github.event.inputs.version }}" \
-                '. += [{"id": ($id | tonumber), "url": $url, "version": $version}]' \
-                versions.json > tmp.json && mv tmp.json versions.json
-            else
-              echo "Version already exists, skipping update"
-            fi
-      
+          version_exists=$(jq --arg version "${{ github.event.inputs.version }}" 'map(select(.version == $version)) | length' versions.json)
+          if [ "$version_exists" -eq 0 ]; then
+            jq --arg id "${{ steps.get_latest_id.outputs.latest_id }}" \
+              --arg url "${{ github.event.inputs.url }}" \
+              --arg version "${{ github.event.inputs.version }}" \
+              '. += [{"id": ($id | tonumber), "url": $url, "version": $version}]' \
+              versions.json > tmp.json && mv tmp.json versions.json
+          else
+            echo "Version already exists, skipping update"
+          fi
+
       - name: Update last_processed_version
         run: |
           id=$(jq --arg version "${{ github.event.inputs.version }}" '.[] | select(.version == $version) | .id' versions.json)
@@ -64,4 +64,3 @@ jobs:
           git add versions.json last_processed_version
           git commit -m "chore: new processed version (${{ github.event.inputs.version }})" || echo "No changes to commit"
           git push
-

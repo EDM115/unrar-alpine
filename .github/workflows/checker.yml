@@ -2,7 +2,7 @@ name: "Check for new UnRAR upstream"
 
 on:
   schedule:
-    - cron: '0 8 * * *'
+    - cron: "0 8 * * *"
   workflow_dispatch:
 
 jobs:
@@ -35,6 +35,6 @@ jobs:
           echo "latest=$latest" >> $GITHUB_OUTPUT
 
       - name: Trigger builder if upstream changed
-        if: steps.extract.outputs.url != steps.current.outputs.latest
+        if: steps.current.outputs.latest != null && steps.extract.outputs.url != steps.current.outputs.latest
         run: gh workflow run builder.yml \
           -f download_url="${{ steps.extract.outputs.url }}"
