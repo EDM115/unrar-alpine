@@ -94,6 +94,7 @@ jobs:
           fi
 
           if [ "$skip" -eq 1 ]; then
+            cd "${GITHUB_WORKSPACE}"
             gh workflow run updater.yml \
               -f version="${{ steps.extract_version.outputs.version }}" \
               -f url="${{ github.event.inputs.download_url }}"
@@ -199,6 +200,7 @@ jobs:
           fi
 
           if [ "$skip" -eq 1 ]; then
+            cd "${GITHUB_WORKSPACE}"
             gh workflow run updater.yml \
               -f version="${{ needs.build_x64.outputs.version }}" \
               -f url="${{ github.event.inputs.download_url }}"
