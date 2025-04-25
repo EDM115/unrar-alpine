@@ -34,6 +34,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Mark workspace as safe for Git
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
       - name: Extract version from URL
         id: extract_version
         run: |
@@ -164,6 +168,10 @@ jobs:
 
       - name: Checkout repo
         uses: actions/checkout@v4
+
+      - name: Mark workspace as safe for Git
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Fetch & extract same source
         run: |
