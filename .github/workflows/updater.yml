@@ -1,0 +1,66 @@
+name: "Update the repo files"
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        required: true
+        type: string
+      url:
+        required: true
+        type: string
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Get the latest ID
+        id: get_latest_id
+        run: |
+          latest_id=$(jq '.[-1].id' versions.json)
+          if [ -z "$latest_id" ]; then
+            latest_id=1
+          else
+            latest_id=$((latest_id + 1))
+          fi
+          echo "latest_id=$latest_id" >> $GITHUB_OUTPUT
+
+      - name: Update versions.json
+        run: |
+            version_exists=$(jq --arg version "${{ github.event.inputs.version }}" 'map(select(.version == $version)) | length' versions.json)
+            if [ "$version_exists" -eq 0 ]; then
+              jq --arg id "${{ steps.get_latest_id.outputs.latest_id }}" \
+                --arg url "${{ github.event.inputs.url }}" \
+                --arg version "${{ github.event.inputs.version }}" \
+                '. += [{"id": ($id | tonumber), "url": $url, "version": $version}]' \
+                versions.json > tmp.json && mv tmp.json versions.json
+            else
+              echo "Version already exists, skipping update"
+            fi
+      
+      - name: Update last_processed_version
+        run: |
+          id=$(jq --arg version "${{ github.event.inputs.version }}" '.[] | select(.version == $version) | .id' versions.json)
+          if [ -z "$id" ]; then
+            echo "Version not found in versions.json"
+            exit 1
+          fi
+          echo "$id" > last_processed_version
+          echo "" >> last_processed_version
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit and push changes
+        run: |
+          git add versions.json last_processed_version
+          git commit -m "chore: new processed version (${{ github.event.inputs.version }}) [skip ci]" || echo "No changes to commit"
+          git push
+

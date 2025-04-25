@@ -20,12 +20,14 @@ jobs:
       sha256_src: ${{ steps.calc_sha_src.outputs.sha256 }}
       sha256_binary_x64: ${{ steps.calc_sha_bin.outputs.sha256 }}
       src_filename: ${{ steps.mk_src_name.outputs.filename }}
+      skip: ${{ steps.compile.outputs.skip }}
     permissions:
       id-token: write
       attestations: write
+      actions: write
     steps:
       - name: Prepare build deps
-        run: apk update && apk add --no-cache curl make g++ libffi-dev musl-dev
+        run: apk update && apk add --no-cache curl make github-cli gcc g++ libffi-dev musl-dev
 
       - name: Extract version from URL
         id: extract_version
@@ -60,49 +62,77 @@ jobs:
           tar xf /tmp/${{ steps.mk_src_name.outputs.filename }} \
             -C /tmp/unrar --strip-components=1
 
-      - name: Compile
+      - name: Compile or quit
+        id: compile
+        continue-on-error: true
         run: |
           cd /tmp/unrar
-          if [ -f makefile ]; then
-            make
-          elif [ -f makefile.gcc ]; then
-            make -f makefile.gcc
-          elif [ -f makefile.unix ]; then
-            make -f makefile.unix
+          skip=0
+
+          if   [ -f makefile ];      then BUILD_CMD="make"
+          elif [ -f makefile.gcc ];  then BUILD_CMD="make -f makefile.gcc"
+          elif [ -f makefile.unix ]; then BUILD_CMD="make -f makefile.unix"
           else
-            echo "❌ No makefile found in /tmp/unrar" >&2
-            exit 1
+            echo "❌ No makefile found" >&2
+            skip=1
           fi
 
+          if [ "$skip" -eq 0 ]; then
+            set +e
+            $BUILD_CMD
+            status=$?
+            set -e
+            if [ "$status" -ne 0 ]; then
+              echo "❌ Build failed (exit $status)" >&2
+              skip=1
+            fi
+          fi
+
+          if [ "$skip" -eq 1 ]; then
+            gh workflow run updater.yml \
+              -f version="${{ steps.extract_version.outputs.version }}" \
+              -f url="${{ github.event.inputs.download_url }}"
+          fi
+
+          echo "skip=$skip" >> $GITHUB_OUTPUT
+
+          if [ "$skip" -eq 1 ]; then exit 1; fi
+
       - name: Compute SHA256 of source archive
+        if: steps.compile.outputs.skip == '0'
         id: calc_sha_src
         run: |
           sha=$(sha256sum /tmp/${{ steps.mk_src_name.outputs.filename }} | awk '{print $1}')
           echo "sha256=$sha" >> $GITHUB_OUTPUT
 
       - name: Compute SHA256 of built unrar
+        if: steps.compile.outputs.skip == '0'
         id: calc_sha_bin
         run: |
           sha=$(sha256sum /tmp/unrar/unrar | awk '{print $1}')
           echo "sha256=$sha" >> $GITHUB_OUTPUT
 
       - name: Package x64 binary
+        if: steps.compile.outputs.skip == '0'
         run: |
           zip -j /tmp/unrar-x64.zip /tmp/unrar/unrar
 
       - name: Upload x64 binary ZIP
+        if: steps.compile.outputs.skip == '0'
         uses: actions/upload-artifact@v4
         with:
           name: unrar-x64
           path: /tmp/unrar-x64.zip
 
       - name: Upload source archive
+        if: steps.compile.outputs.skip == '0'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.mk_src_name.outputs.filename }}
           path: /tmp/${{ steps.mk_src_name.outputs.filename }}
 
       - name: Attest build provenance
+        if: steps.compile.outputs.skip == '0'
         uses: actions/attest-build-provenance@v2
         with:
           subject-path: '/tmp/unrar/unrar'
@@ -115,12 +145,14 @@ jobs:
     needs: build_x64
     outputs:
       sha256_binary_arm64: ${{ steps.calc_sha_bin.outputs.sha256 }}
+      skip: ${{ steps.compile.outputs.skip }}
     permissions:
       id-token: write
       attestations: write
+      actions: write
     steps:
       - name: Prepare build deps
-        run: apk update && apk add --no-cache curl make g++ libffi-dev musl-dev
+        run: apk update && apk add --no-cache curl make github-cli gcc g++ libffi-dev musl-dev
 
       - name: Fetch & extract same source
         run: |
@@ -130,28 +162,63 @@ jobs:
           tar xf /tmp/${{ needs.build_x64.outputs.src_filename }} \
             -C /tmp/unrar --strip-components=1
 
-      - name: Compile
+      - name: Compile or quit
+        id: compile
+        continue-on-error: true
         run: |
           cd /tmp/unrar
-          make
+          skip=0
+
+          if   [ -f makefile ];      then BUILD_CMD="make"
+          elif [ -f makefile.gcc ];  then BUILD_CMD="make -f makefile.gcc"
+          elif [ -f makefile.unix ]; then BUILD_CMD="make -f makefile.unix"
+          else
+            echo "❌ No makefile found" >&2
+            skip=1
+          fi
+
+          if [ "$skip" -eq 0 ]; then
+            set +e
+            $BUILD_CMD
+            status=$?
+            set -e
+            if [ "$status" -ne 0 ]; then
+              echo "❌ Build failed (exit $status)" >&2
+              skip=1
+            fi
+          fi
+
+          if [ "$skip" -eq 1 ]; then
+            gh workflow run updater.yml \
+              -f version="${{ needs.build_x64.outputs.version }}" \
+              -f url="${{ github.event.inputs.download_url }}"
+          fi
+
+          echo "skip=$skip" >> $GITHUB_OUTPUT
+
+          if [ "$skip" -eq 1 ]; then exit 1; fi
 
       - name: Compute SHA256 of built ARM64 unrar
+        if: steps.compile.outputs.skip == '0'
         id: calc_sha_bin
         run: |
           sha=$(sha256sum /tmp/unrar/unrar | awk '{print $1}')
           echo "sha256=$sha" >> $GITHUB_OUTPUT
 
       - name: Package ARM64 binary
+        if: steps.compile.outputs.skip == '0'
         run: |
           zip -j /tmp/unrar-arm64.zip /tmp/unrar/unrar
 
       - name: Upload ARM64 binary ZIP
+        if: steps.compile.outputs.skip == '0'
         uses: actions/upload-artifact@v4
         with:
           name: unrar-arm64
           path: /tmp/unrar-arm64.zip
 
       - name: Attest build provenance
+        if: steps.compile.outputs.skip == '0'
         uses: actions/attest-build-provenance@v2
         with:
           subject-path: '/tmp/unrar/unrar'
@@ -169,6 +236,7 @@ jobs:
       actions: write
     steps:
       - name: Trigger publisher workflow
+        if: needs.build_x64.outputs.skip == '0' && needs.build_arm64.outputs.skip == '0'
         run: gh workflow run publisher.yml \
           -f version="${{ needs.build_x64.outputs.version }}" \
           -f binary_version="${{ needs.build_x64.outputs.binary_version }}" \

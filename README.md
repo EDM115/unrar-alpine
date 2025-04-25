@@ -33,6 +33,9 @@ An ARM64 version is also available under the name `unrar-arm64.zip`.
 Each release contains the SHA-256 checksum of the built files, as well as the SHA-256 checksum of the original files provided by RARLAB.  
 You can also verify the release by going to [Attestations](https://github.com/EDM115/unrar-alpine/attestations), then select the correct release and platform. Copy the provided command and point it to the `unrar` binary from the zip.
 
+> [!IMPORTANT]  
+> If a version is present in `versions.json` but **not** in the releases, it means that code simply didn't compiled.
+
 ## Versioning scheme
 The versions you see in the releases tab are extracted from the original download link.  
 *However*, the `unrar` executable will likely **not** return the same version.  
@@ -50,4 +53,5 @@ In the very unlikely event that RARLAB releases 2 unrar versions the same day, [
 
 ## License
 Code written in this repo by myself is licenced under the MIT License.  
-The original `unrar` code and its resulting binaries are freeware and property of RARLAB/WinRAR GmbH., please read the files in the [`unrar/`](./unrar/) folder for more info
+The original `unrar` code and its resulting binaries are freeware and property of RARLAB/WinRAR GmbH., please read the files in the [`unrar/`](./unrar/) folder for more info.  
+Thanks to https://github.com/aawc/unrar for the idea of a repo releasing binaries.
