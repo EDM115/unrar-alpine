@@ -146,7 +146,6 @@ jobs:
         uses: actions/attest-build-provenance@v2
         with:
           subject-path: '/tmp/unrar/unrar'
-          subject-digest: "sha256:${{ steps.calc_sha_bin.outputs.sha256 }}"
 
   trigger_publisher:
     name: Trigger publisher
