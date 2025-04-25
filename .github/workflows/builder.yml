@@ -31,6 +31,9 @@ jobs:
       - name: Prepare build deps
         run: apk update && apk add --no-cache curl make github-cli gcc g++ libffi-dev musl-dev zip
 
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
       - name: Extract version from URL
         id: extract_version
         run: |
@@ -157,6 +160,9 @@ jobs:
     steps:
       - name: Prepare build deps
         run: apk update && apk add --no-cache curl make github-cli gcc g++ libffi-dev musl-dev zip
+
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
       - name: Fetch & extract same source
         run: |
