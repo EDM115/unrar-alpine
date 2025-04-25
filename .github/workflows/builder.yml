@@ -13,6 +13,8 @@ jobs:
     name: Build x86_64
     runs-on: ubuntu-24.04
     container: amd64/alpine:latest
+    env:
+      GH_TOKEN: ${{ github.token }}
     outputs:
       version: ${{ steps.extract_version.outputs.version }}
       binary_version: ${{ steps.extract_version.outputs.binary_version }}
@@ -27,7 +29,7 @@ jobs:
       actions: write
     steps:
       - name: Prepare build deps
-        run: apk update && apk add --no-cache curl make github-cli gcc g++ libffi-dev musl-dev
+        run: apk update && apk add --no-cache curl make github-cli gcc g++ libffi-dev musl-dev zip
 
       - name: Extract version from URL
         id: extract_version
@@ -142,6 +144,8 @@ jobs:
     name: Build ARM64
     runs-on: ubuntu-24.04-arm
     container: arm64v8/alpine:latest
+    env:
+      GH_TOKEN: ${{ github.token }}
     needs: build_x64
     outputs:
       sha256_binary_arm64: ${{ steps.calc_sha_bin.outputs.sha256 }}
@@ -152,7 +156,7 @@ jobs:
       actions: write
     steps:
       - name: Prepare build deps
-        run: apk update && apk add --no-cache curl make github-cli gcc g++ libffi-dev musl-dev
+        run: apk update && apk add --no-cache curl make github-cli gcc g++ libffi-dev musl-dev zip
 
       - name: Fetch & extract same source
         run: |
