@@ -173,6 +173,7 @@ jobs:
             -f version="${{ needs.build.outputs.version }}" \
             -f binary_version="${{ needs.build.outputs.binary_version }}" \
             -f release_date="${{ needs.build.outputs.release_date }}" \
+            -f run_id="${{ github.run_id }}" \
             -f sha256_src="${{ needs.build.outputs.sha256_src }}" \
             -f sha256_binary="${{ needs.build.outputs.sha256_binary }}" \
             -f src_filename="${{ needs.build.outputs.src_filename }}" \

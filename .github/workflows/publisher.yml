@@ -12,6 +12,9 @@ on:
       release_date:
         required: true
         type: string
+      run_id:
+        required: true
+        type: string
       sha256_src:
         required: true
         type: string
@@ -35,6 +38,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: unrar
+          github-token: ${{ secrets.PAT }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.inputs.run_id }}
           path: artifacts
           merge-multiple: true
 
@@ -42,6 +48,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ github.event.inputs.src_filename }}
+          github-token: ${{ secrets.PAT }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.inputs.run_id }}
           path: artifacts
           merge-multiple: true
 
