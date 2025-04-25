@@ -158,6 +158,13 @@ jobs:
     permissions:
       actions: write
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Mark workspace as safe for Git
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
       - name: Trigger publisher workflow
         if: needs.build.outputs.skip == '0'
         run: |
