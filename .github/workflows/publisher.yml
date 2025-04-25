@@ -36,12 +36,14 @@ jobs:
         with:
           name: unrar
           path: artifacts
+          merge-multiple: true
 
       - name: Download source archive
         uses: actions/download-artifact@v4
         with:
           name: ${{ github.event.inputs.src_filename }}
           path: artifacts
+          merge-multiple: true
 
       - name: Extract binary ZIP
         run: |

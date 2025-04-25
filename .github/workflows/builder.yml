@@ -146,6 +146,7 @@ jobs:
         uses: actions/attest-build-provenance@v2
         with:
           subject-path: '/tmp/unrar/unrar'
+          subject-name: "UnRAR (${{ steps.extract_version.outputs.binary_version }})"
 
   trigger_publisher:
     name: Trigger publisher
@@ -159,11 +160,13 @@ jobs:
     steps:
       - name: Trigger publisher workflow
         if: needs.build.outputs.skip == '0'
-        run: gh workflow run publisher.yml \
-          -f version="${{ needs.build.outputs.version }}" \
-          -f binary_version="${{ needs.build.outputs.binary_version }}" \
-          -f release_date="${{ needs.build.outputs.release_date }}" \
-          -f sha256_src="${{ needs.build.outputs.sha256_src }}" \
-          -f sha256_binary="${{ needs.build.outputs.sha256_binary }}" \
-          -f src_filename="${{ needs.build.outputs.src_filename }}"
-          -f url="${{ github.event.inputs.download_url }}"
+        run: |
+          cd "${GITHUB_WORKSPACE}"
+          gh workflow run publisher.yml \
+            -f version="${{ needs.build.outputs.version }}" \
+            -f binary_version="${{ needs.build.outputs.binary_version }}" \
+            -f release_date="${{ needs.build.outputs.release_date }}" \
+            -f sha256_src="${{ needs.build.outputs.sha256_src }}" \
+            -f sha256_binary="${{ needs.build.outputs.sha256_binary }}" \
+            -f src_filename="${{ needs.build.outputs.src_filename }}" \
+            -f url="${{ github.event.inputs.download_url }}"
