@@ -61,7 +61,7 @@ jobs:
             | Binary version (from executable)   | ${{ github.event.inputs.binary_version }}          |
             | Release date                       | ${{ github.event.inputs.release_date }}            |
             | SHA256 (source archive)            | ${{ github.event.inputs.sha256_src }}              |
-            | SHA256 (binary)                    | ${{ github.event.inputs.sha256_binary }}       |
+            | SHA256 (binary)                    | ${{ github.event.inputs.sha256_binary }}           |
           files: |
             artifacts/unrar/unrar
             artifacts/${{ github.event.inputs.src_filename }}
