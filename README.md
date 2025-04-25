@@ -1,5 +1,9 @@
+<div align="center">
+
 # unrar-alpine
 ## UnRAR, built for Alpine Linux. Automatically built and released at each new version
+
+</div>
 
 ## Description
 WinRAR is a powerful archive manager. It can create, manage, and extract compressed files.  
@@ -28,8 +32,8 @@ RUN curl -LsSf https://api.github.com/repos/EDM115/unrar-alpine/releases/latest 
 ```
 
 All available versions along with their download URLs are available in [`versions.json`](versions.json).  
-Each release contains the SHA-256 checksum of the built files, as well as the SHA-256 checksum of the original files provided by RARLAB.  
-You can also verify the release by going to [Attestations](https://github.com/EDM115/unrar-alpine/attestations), then select the correct release and platform. Copy the provided command and point it to the `unrar` binary from the zip.
+Each release contains the SHA-256 checksum of the built binary, as well as the SHA-256 checksum of the original files provided by RARLAB.  
+You can also verify the release by going to [Attestations](https://github.com/EDM115/unrar-alpine/attestations), then select the correct release. Copy the provided command and point it to the `unrar` binary from the zip.
 
 > [!IMPORTANT]  
 > If a version is present in `versions.json` but **not** in the releases, it means that code simply didn't compiled.
@@ -38,21 +42,21 @@ You can also verify the release by going to [Attestations](https://github.com/ED
 > I initially wanted to provide ARM64 versions as well but it isn't possible due to current GitHub restrictions.
 
 ## Versioning scheme
-The versions you see in the releases tab are extracted from the original download link.  
-*However*, the `unrar` executable will likely **not** return the same version.  
+The versions you see in the releases tab as tags are extracted from the original download link.  
+*However*, the `unrar` binary will likely **not** return the same version.  
 I do not know why RARLAB does this.  
 For the sake of convenience, releases do not get the actual version from the `unrar` binary, as sometimes they go in the past and sometimes they are duplicates.  
 The body of the release will precise :
 - The version from the download link
 - The version from the `unrar` binary
-- The date at which it was made released
+- The date at which it was released
 - The checksum of the built `unrar`
 - The checksum of the downloaded source code archive
 
-This repo will check every day at 8 AM UTC if a new version is available, and if it is the case, will built and release it.  
+This repo will check every day at 8 AM UTC if a new version is available, and if so, will build and release it.  
 In the very unlikely event that RARLAB releases 2 unrar versions the same day, [open an issue](https://github.com/EDM115/unrar-alpine/issues) and I will manually add it.  
 
 ## License
-Code written in this repo by myself is licenced under the MIT License.  
+Code written in this repo by myself is licensed under the MIT License.  
 The original `unrar` code and its resulting binaries are freeware and property of RARLAB/WinRAR GmbH., please read the files in the [`unrar/`](./unrar/) folder for more info.  
 Thanks to https://github.com/aawc/unrar for the idea of a repo releasing binaries.
