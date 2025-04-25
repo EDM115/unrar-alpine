@@ -1,9 +1,9 @@
 name: "Catch up UnRAR builds"
 
 on:
-  push:
-    branches:
-      - master
+  # push:
+  #   branches:
+  #     - master
   workflow_dispatch:
 
 jobs:
