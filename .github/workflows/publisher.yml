@@ -58,10 +58,16 @@ jobs:
           merge-multiple: true
 
       - name: Extract binary ZIP
+        id: extract
         run: |
           unzip -o artifacts/unrar.zip -d artifacts/unrar
           rm artifacts/unrar.zip
           chmod +x artifacts/unrar/unrar
+          # get unrar size
+          size=$(stat -c %s artifacts/unrar/unrar)
+          echo "size=$size" >> $GITHUB_OUTPUT
+          date=$(date +"%Y-%m-%d")
+          echo "date=$date" >> $GITHUB_OUTPUT
 
       - name: Create release
         uses: softprops/action-gh-release@v2
@@ -69,18 +75,34 @@ jobs:
           tag_name: ${{ github.event.inputs.version }}
           name: ${{ github.event.inputs.version }}
           body: |
+            # UnRAR
+            ## Version ${{ github.event.inputs.version }}
+            ### Run at ${{ steps.extract.outputs.date }}
+
             | Field                              | Value                                              |
-            |------------------------------------|----------------------------------------------------|
+            | :--------------------------------- | :------------------------------------------------- |
             | Version (from URL)                 | ${{ github.event.inputs.version }}                 |
             | Binary version (from executable)   | ${{ github.event.inputs.binary_version }}          |
             | Release date                       | ${{ github.event.inputs.release_date }}            |
             | SHA256 (source archive)            | ${{ github.event.inputs.sha256_src }}              |
             | SHA256 (binary)                    | ${{ github.event.inputs.sha256_binary }}           |
+            | Size (binary)                      | ${{ steps.extract.outputs.size }}                  |
+
+            cc @EDM115
           files: |
             artifacts/unrar/unrar
             artifacts/${{ github.event.inputs.src_filename }}
 
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Mark workspace as safe for Git
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
       - name: Update version files
-        run: gh workflow run updater.yml \
-          -f version="${{ github.event.inputs.version }}" \
-          -f url="${{ github.event.inputs.url }}"
+        run: |
+          cd "${GITHUB_WORKSPACE}"
+          gh workflow run updater.yml \
+            -f version="${{ github.event.inputs.version }}" \
+            -f url="${{ github.event.inputs.url }}"
