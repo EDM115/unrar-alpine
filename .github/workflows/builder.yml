@@ -146,7 +146,7 @@ jobs:
         uses: actions/attest-build-provenance@v2
         with:
           subject-path: '/tmp/unrar/unrar'
-          subject-name: "UnRAR (${{ steps.extract_version.outputs.binary_version }})"
+          subject-name: "UnRAR v${{ steps.extract_version.outputs.version }} (binary v${{ steps.extract_version.outputs.binary_version }})"
 
   trigger_publisher:
     name: Trigger publisher

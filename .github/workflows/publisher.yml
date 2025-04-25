@@ -75,9 +75,11 @@ jobs:
           tag_name: ${{ github.event.inputs.version }}
           name: ${{ github.event.inputs.version }}
           body: |
-            # UnRAR
+            # [UnRAR - Alpine Linux build](https://github.com/EDM115/unrar-alpine)
             ## Version ${{ github.event.inputs.version }}
             ### Run at ${{ steps.extract.outputs.date }}
+
+            ---
 
             | Field                              | Value                                              |
             | :--------------------------------- | :------------------------------------------------- |
@@ -88,7 +90,10 @@ jobs:
             | SHA256 (binary)                    | ${{ github.event.inputs.sha256_binary }}           |
             | Size (binary)                      | ${{ steps.extract.outputs.size }}                  |
 
-            cc @EDM115
+            ---
+
+            > [!NOTE]  
+            > ping @EDM115
           files: |
             artifacts/unrar/unrar
             artifacts/${{ github.event.inputs.src_filename }}
