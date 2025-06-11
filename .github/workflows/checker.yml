@@ -36,5 +36,6 @@ jobs:
 
       - name: Trigger builder if upstream changed
         if: steps.current.outputs.latest != null && steps.extract.outputs.url != steps.current.outputs.latest
-        run: gh workflow run builder.yml \
-          -f download_url="${{ steps.extract.outputs.url }}"
+        run: |
+          gh workflow run builder.yml \
+            -f download_url="${{ steps.extract.outputs.url }}"

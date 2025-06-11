@@ -35,8 +35,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Mark workspace as safe for Git
-        run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Extract version from URL
         id: extract_version
@@ -162,8 +161,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Mark workspace as safe for Git
-        run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Trigger publisher workflow
         if: needs.build.outputs.skip == '0'
