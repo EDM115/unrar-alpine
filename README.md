@@ -50,9 +50,9 @@ The basic thing you could do is `apk add --no-cache gcc`, or if you're really tr
 >
 > # ...
 >
-> RUN curl -LsSf https://www.rarlab.com/rar/rarlinux-x64-711.tar.gz > /tmp/rarlinux-x64-711.tar.gz && \
+> RUN curl -LsSf https://www.rarlab.com/rar/rarlinux-x64-712.tar.gz > /tmp/rarlinux-x64-712.tar.gz && \
 >     mkdir /tmp/unrar && \
->     tar xf /tmp/rarlinux-x64-711.tar.gz -C /tmp/unrar --strip-components=1 && \
+>     tar xf /tmp/rarlinux-x64-712.tar.gz -C /tmp/unrar --strip-components=1 && \
 >     install -v -m755 /tmp/unrar/unrar /usr/local/bin
 >
 > # You MUST install required libraries as well
@@ -63,7 +63,8 @@ The basic thing you could do is `apk add --no-cache gcc`, or if you're really tr
 ## About the releases
 All available versions along with their download URLs are available in [`versions.json`](versions.json).  
 Each release contains the SHA-256 checksum of the built binary, as well as the SHA-256 checksum of the original files provided by RARLAB.  
-You can also verify the release by going to [Attestations](https://github.com/EDM115/unrar-alpine/attestations), then select the correct release. Copy the provided command and point it to the `unrar` binary from the zip.
+You can also verify the release by going to [Attestations](https://github.com/EDM115/unrar-alpine/attestations), then select the correct release. Copy the provided Verify command and point it to the `unrar` binary from the release.  
+Finally, the releases are made immutable, meaning nobody can edit the files after the release is made.
 
 > [!IMPORTANT]  
 > If a version is present in `versions.json` but **not** in the releases, it means that code simply didn't compiled.

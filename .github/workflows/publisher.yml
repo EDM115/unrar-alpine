@@ -30,7 +30,7 @@ on:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     env:
       GH_TOKEN: ${{ github.token }}
     permissions:
@@ -38,7 +38,7 @@ jobs:
       contents: write
     steps:
       - name: Download binary ZIP
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: unrar
           github-token: ${{ secrets.PAT }}
@@ -48,7 +48,7 @@ jobs:
           merge-multiple: true
 
       - name: Download source archive
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: ${{ github.event.inputs.src_filename }}
           github-token: ${{ secrets.PAT }}
@@ -70,36 +70,40 @@ jobs:
           echo "date=$date" >> $GITHUB_OUTPUT
 
       - name: Create release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.event.inputs.version }}
-          name: ${{ github.event.inputs.version }}
-          body: |
-            # [UnRAR - Alpine Linux build](https://github.com/EDM115/unrar-alpine)
-            ## Version ${{ github.event.inputs.version }}
-            ### Run at ${{ steps.extract.outputs.date }}
+        run: |
+          cat > RELEASE_NOTES.md <<'EOF'
+# [UnRAR - Alpine Linux build](https://github.com/EDM115/unrar-alpine)
+## Version ${{ github.event.inputs.version }}
+### Build date : ${{ steps.extract.outputs.date }}
 
-            ---
+---
 
-            | Field                              | Value                                              |
-            | :--------------------------------- | :------------------------------------------------- |
-            | Version (from URL)                 | ${{ github.event.inputs.version }}                 |
-            | Binary version (from executable)   | ${{ github.event.inputs.binary_version }}          |
-            | Release date                       | ${{ github.event.inputs.release_date }}            |
-            | SHA256 (source archive)            | ${{ github.event.inputs.sha256_src }}              |
-            | SHA256 (binary)                    | ${{ github.event.inputs.sha256_binary }}           |
-            | Size (binary)                      | ${{ steps.extract.outputs.size }}                  |
+| Field                            | Value                                       |
+| :------------------------------- | :------------------------------------------ |
+| Version (from URL)               | `${{ github.event.inputs.version }}`        |
+| Binary version (from executable) | `${{ github.event.inputs.binary_version }}` |
+| Release date                     | `${{ github.event.inputs.release_date }}`   |
+| SHA256 (source archive)          | `${{ github.event.inputs.sha256_src }}`     |
+| SHA256 (binary)                  | `${{ github.event.inputs.sha256_binary }}`  |
+| Size in bytes (binary)           | `${{ steps.extract.outputs.size }}`         |
 
-            ---
+---
 
-            > [!NOTE]  
-            > ping @EDM115
-          files: |
-            artifacts/unrar/unrar
-            artifacts/${{ github.event.inputs.src_filename }}
+> [!NOTE]  
+> ping @EDM115
+EOF
+          gh release create "${{ github.event.inputs.version }}" \
+            --draft \
+            --title "${{ github.event.inputs.version }}" \
+            --notes-file RELEASE_NOTES.md
+          gh release upload "${{ github.event.inputs.version }}" \
+            "artifacts/unrar/unrar" \
+            "artifacts/${{ github.event.inputs.src_filename }}"
+          gh release edit "${{ github.event.inputs.version }}" --draft=false
+          rm RELEASE_NOTES.md
 
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Mark workspace as safe for Git
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
