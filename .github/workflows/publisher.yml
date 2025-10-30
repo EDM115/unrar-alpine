@@ -71,27 +71,27 @@ jobs:
 
       - name: Create release
         run: |
-          cat > RELEASE_NOTES.md <<'EOF'
-# [UnRAR - Alpine Linux build](https://github.com/EDM115/unrar-alpine)
-## Version ${{ github.event.inputs.version }}
-### Build date : ${{ steps.extract.outputs.date }}
-
----
-
-| Field                            | Value                                       |
-| :------------------------------- | :------------------------------------------ |
-| Version (from URL)               | `${{ github.event.inputs.version }}`        |
-| Binary version (from executable) | `${{ github.event.inputs.binary_version }}` |
-| Release date                     | `${{ github.event.inputs.release_date }}`   |
-| SHA256 (source archive)          | `${{ github.event.inputs.sha256_src }}`     |
-| SHA256 (binary)                  | `${{ github.event.inputs.sha256_binary }}`  |
-| Size in bytes (binary)           | `${{ steps.extract.outputs.size }}`         |
-
----
-
-> [!NOTE]  
-> ping @EDM115
-EOF
+          cat > RELEASE_NOTES.md <<'EOF' 
+          # [UnRAR - Alpine Linux build](https://github.com/EDM115/unrar-alpine)
+          ## Version ${{ github.event.inputs.version }}
+          ### Build date : ${{ steps.extract.outputs.date }}
+          
+          ---
+          
+          | Field                            | Value                                       |
+          | :------------------------------- | :------------------------------------------ |
+          | Version (from URL)               | `${{ github.event.inputs.version }}`        |
+          | Binary version (from executable) | `${{ github.event.inputs.binary_version }}` |
+          | Release date                     | `${{ github.event.inputs.release_date }}`   |
+          | SHA256 (source archive)          | `${{ github.event.inputs.sha256_src }}`     |
+          | SHA256 (binary)                  | `${{ github.event.inputs.sha256_binary }}`  |
+          | Size in bytes (binary)           | `${{ steps.extract.outputs.size }}`         |
+          
+          ---
+          
+          > [!NOTE]  
+          > ping @EDM115
+          EOF
           gh release create "${{ github.event.inputs.version }}" \
             --draft \
             --title "${{ github.event.inputs.version }}" \
