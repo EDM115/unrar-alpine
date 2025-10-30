@@ -37,6 +37,12 @@ jobs:
       actions: write
       contents: write
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
+
+      - name: Mark workspace as safe for Git
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
       - name: Download binary ZIP
         uses: actions/download-artifact@v6
         with:
@@ -69,12 +75,6 @@ jobs:
           date=$(date +"%Y-%m-%d")
           echo "date=$date" >> $GITHUB_OUTPUT
 
-      - name: Checkout repo
-        uses: actions/checkout@v5
-
-      - name: Mark workspace as safe for Git
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
       - name: Create release
         run: |
           cat > RELEASE_NOTES.md <<'EOF' 
@@ -106,7 +106,11 @@ jobs:
             "artifacts/unrar/unrar" \
             "artifacts/${{ github.event.inputs.src_filename }}"
           gh release edit "${{ github.event.inputs.version }}" --draft=false
+
+      - name: Cleanup
+        run: |
           rm RELEASE_NOTES.md
+          rm -rf artifacts
 
       - name: Update version files
         run: |
