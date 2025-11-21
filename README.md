@@ -50,9 +50,9 @@ The basic thing you could do is `apk add --no-cache gcc`, or if you're really tr
 >
 > # ...
 >
-> RUN curl -LsSf https://www.rarlab.com/rar/rarlinux-x64-712.tar.gz > /tmp/rarlinux-x64-712.tar.gz && \
+> RUN curl -LsSf https://www.rarlab.com/rar/rarlinux-x64-720b1.tar.gz > /tmp/rarlinux.tar.gz && \
 >     mkdir /tmp/unrar && \
->     tar xf /tmp/rarlinux-x64-712.tar.gz -C /tmp/unrar --strip-components=1 && \
+>     tar xf /tmp/rarlinux.tar.gz -C /tmp/unrar --strip-components=1 && \
 >     install -v -m755 /tmp/unrar/unrar /usr/local/bin
 >
 > # You MUST install required libraries as well
@@ -78,13 +78,13 @@ The versions you see in the releases tab as tags are extracted from the original
 I do not know why RARLAB does this.  
 For the sake of convenience, releases do not get the actual version from the `unrar` binary, as sometimes they go in the past and sometimes there are duplicates.  
 The body of the release will precise :
+- The date at which this release was built
 - The version from the download link
 - The version from the `unrar` binary
-- The date at which it was released
-- The checksum of the built `unrar`
+- The date at which it was released (made by the developers, can be earlier than the date where it was made available on RARLAB's website)
 - The checksum of the downloaded source code archive
+- The checksum of the built `unrar`
 - The size in bytes of the built `unrar`
-- The date at which this release was built
 
 This repo will check every day at 8 AM UTC if a new version is available, and if so, will build and release it.  
 In the very unlikely event that RARLAB releases 2 UnRAR versions the same day, [open an issue](https://github.com/EDM115/unrar-alpine/issues) and I will manually add it.  
