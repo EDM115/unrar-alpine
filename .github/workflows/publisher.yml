@@ -38,13 +38,13 @@ jobs:
       contents: write
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Mark workspace as safe for Git
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Download binary ZIP
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: unrar
           github-token: ${{ secrets.PAT }}
@@ -54,7 +54,7 @@ jobs:
           merge-multiple: true
 
       - name: Download source archive
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: ${{ github.event.inputs.src_filename }}
           github-token: ${{ secrets.PAT }}

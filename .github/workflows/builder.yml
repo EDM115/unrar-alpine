@@ -26,13 +26,14 @@ jobs:
     permissions:
       id-token: write
       attestations: write
+      artifact-metadata: write
       actions: write
     steps:
       - name: Prepare build deps
         run: apk update && apk add --no-cache curl make github-cli gcc g++ libffi-dev musl-dev zip
 
       - name: Checkout repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Mark workspace as safe for Git
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
@@ -128,14 +129,14 @@ jobs:
 
       - name: Upload binary ZIP
         if: steps.compile.outputs.skip == '0'
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: unrar
           path: /tmp/unrar.zip
 
       - name: Upload source archive
         if: steps.compile.outputs.skip == '0'
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ steps.mk_src_name.outputs.filename }}
           path: /tmp/${{ steps.mk_src_name.outputs.filename }}
@@ -158,7 +159,7 @@ jobs:
       actions: write
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Mark workspace as safe for Git
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"

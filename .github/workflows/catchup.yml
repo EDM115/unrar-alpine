@@ -1,9 +1,6 @@
 name: "Catch up UnRAR builds"
 
 on:
-  # push:
-  #   branches:
-  #     - master
   workflow_dispatch:
 
 jobs:
@@ -15,7 +12,7 @@ jobs:
       actions: write
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
