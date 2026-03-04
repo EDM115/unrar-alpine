@@ -122,28 +122,23 @@ jobs:
           sha=$(sha256sum /tmp/unrar/unrar | awk '{print $1}')
           echo "sha256=$sha" >> $GITHUB_OUTPUT
 
-      - name: Package binary
-        if: steps.compile.outputs.skip == '0'
-        run: |
-          zip -j /tmp/unrar.zip /tmp/unrar/unrar
-
       - name: Upload binary ZIP
         if: steps.compile.outputs.skip == '0'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
-          name: unrar
-          path: /tmp/unrar.zip
+          archive: false
+          path: /tmp/unrar/unrar
 
       - name: Upload source archive
         if: steps.compile.outputs.skip == '0'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
-          name: ${{ steps.mk_src_name.outputs.filename }}
+          archive: false
           path: /tmp/${{ steps.mk_src_name.outputs.filename }}
 
       - name: Attest build provenance
         if: steps.compile.outputs.skip == '0'
-        uses: actions/attest-build-provenance@v3
+        uses: actions/attest@v4
         with:
           subject-path: "/tmp/unrar/unrar"
           subject-name: "UnRAR v${{ steps.extract_version.outputs.version }} (binary v${{ steps.extract_version.outputs.binary_version }})"

@@ -3,6 +3,8 @@
 # unrar-alpine
 ## UnRAR, built for Alpine Linux. Automatically built and released at each new version
 
+<img src="https://edm115.dev/img/projects/unrar-alpine.webp" alt="winrar logo" width="200" height="200">
+
 </div>
 
 ## Description
@@ -50,7 +52,7 @@ The basic thing you could do is `apk add --no-cache gcc`, or if you're really tr
 >
 > # ...
 >
-> RUN curl -LsSf https://www.rarlab.com/rar/rarlinux-x64-720b1.tar.gz > /tmp/rarlinux.tar.gz && \
+> RUN curl -LsSf https://www.rarlab.com/rar/rarlinux-x64-720.tar.gz > /tmp/rarlinux.tar.gz && \
 >     mkdir /tmp/unrar && \
 >     tar xf /tmp/rarlinux.tar.gz -C /tmp/unrar --strip-components=1 && \
 >     install -v -m755 /tmp/unrar/unrar /usr/local/bin
