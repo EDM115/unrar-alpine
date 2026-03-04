@@ -5,6 +5,8 @@
 
 <img src="https://edm115.dev/img/projects/unrar-alpine.webp" alt="winrar logo" width="200" height="200">
 
+![Total downloads](https://img.shields.io/github/downloads/EDM115/unrar-alpine/total?style=for-the-badge&label=Total%20downloads)
+
 </div>
 
 ## Description
