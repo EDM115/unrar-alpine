@@ -963,5 +963,10 @@
     "id": 193,
     "url": "https://www.rarlab.com/rar/unrarsrc-7.2.5.tar.gz",
     "version": "7.2.5"
+  },
+  {
+    "id": 194,
+    "url": "https://www.rarlab.com/rar/unrarsrc-7.2.6.tar.gz",
+    "version": "7.2.6"
   }
 ]
